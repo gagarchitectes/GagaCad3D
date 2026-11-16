@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0c1724">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="GagaCad3D">
+  <title>GagaCad3D — BIM Mobile V0.1</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
+  </script>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">G</span><div><strong>GagaCad<span>3D</span></strong><small>ÉDITEUR BIM · V0.1</small></div></div>
+    <div class="top-actions">
+      <button id="newProject" title="Nouveau projet" aria-label="Nouveau projet">＋</button>
+      <button id="openProject" title="Ouvrir un projet" aria-label="Ouvrir un projet">▤</button>
+      <button id="saveProject" class="primary" title="Enregistrer" aria-label="Enregistrer">⤓</button>
+      <button id="moreButton" title="Options" aria-label="Options">⋯</button>
+    </div>
+  </header>
+  <div class="project-strip"><span id="projectTitle">Sans titre</span><span id="projectState">● Non enregistré</span></div>
+  <main id="workspace">
+    <section id="planView" class="viewport active" aria-label="Plan architectural">
+      <canvas id="planCanvas" aria-label="Surface de dessin du plan"></canvas>
+      <div class="view-tag">PLAN RDC · m</div>
+      <div id="planHint" class="hint">Choisissez Mur puis touchez deux points.</div>
+    </section>
+    <section id="modelView" class="viewport" hidden aria-label="Vue du bâtiment en 3D">
+      <div id="threeHost"></div>
+      <div class="view-tag">PERSPECTIVE 3D</div>
+      <div class="hint">1 doigt : orbite · 2 doigts : zoom / déplacement</div>
+    </section>
+    <div class="toolrail" id="toolrail" aria-label="Outils">
+      <button id="selectTool" class="tool active" title="Sélectionner" aria-label="Sélectionner">↖<small>Choisir</small></button>
+      <button id="wallTool" class="tool" title="Dessiner un mur" aria-label="Dessiner un mur">▥<small>Mur</small></button>
+      <button id="panTool" class="tool" title="Déplacer le plan" aria-label="Déplacer le plan">✋<small>Pan</small></button>
+      <span class="tool-separator"></span>
+      <button id="zoomIn" class="tool compact" title="Zoom avant" aria-label="Zoom avant">＋</button>
+      <button id="zoomOut" class="tool compact" title="Zoom arrière" aria-label="Zoom arrière">−</button>
+      <button id="fitView" class="tool compact" title="Cadrer le projet" aria-label="Cadrer le projet">⌖</button>
+      <button id="undo" class="tool compact" title="Annuler" aria-label="Annuler" disabled>↶</button>
+    </div>
+    <div id="selectionBar" hidden><span id="selectionLabel">Mur</span><button id="editSelected">Propriétés</button><button id="deleteSelected" title="Supprimer le mur">🗑</button></div>
+    <div class="statusbar"><span id="wallCount">0 mur</span><span id="coordinates">X 0,00 · Y 0,00 m</span></div>
+  </main>
+  <nav class="bottom-tabs" aria-label="Vues">
+    <button id="planTab" class="active" aria-pressed="true"><span>▦</span> Plan 2D</button>
+    <button id="modelTab" aria-pressed="false"><span>⬡</span> Modèle 3D</button>
+    <button id="propsTab" aria-pressed="false"><span>☷</span> Propriétés</button>
+  </nav>
+  <aside id="propertySheet" class="sheet" hidden aria-label="Propriétés du mur">
+    <div class="sheet-head"><div><small>ÉLÉMENT BIM</small><h2 id="propertyHeading">Mur sélectionné</h2></div><button id="closeSheet" aria-label="Fermer">✕</button></div>
+    <div class="properties-grid">
+      <label>Longueur <span>m</span><input id="pLength" type="number" min="0.1" max="2000" step="0.1" inputmode="decimal"></label>
+      <label>Orientation <span>°</span><input id="pAngle" type="number" min="-360" max="360" step="1" inputmode="decimal"></label>
+      <label>Épaisseur <span>m</span><input id="pThickness" type="number" min="0.05" max="5" step="0.01" inputmode="decimal"></label>
+      <label>Hauteur <span>m</span><input id="pHeight" type="number" min="0.2" max="100" step="0.1" inputmode="decimal"></label>
+      <label>Altitude de base <span>m</span><input id="pBase" type="number" min="-100" max="100" step="0.1" inputmode="decimal"></label>
+      <label>Matériau<select id="pMaterial"><option value="concrete">Béton</option><option value="brick">Brique</option><option value="stone">Pierre</option><option value="wood">Bois</option><option value="glass">Verre</option></select></label>
+    </div>
+    <div class="sheet-actions"><button id="duplicateSelected">Dupliquer +1 m</button><button id="sheetDelete" class="danger">Supprimer</button></div>
+  </aside>
+  <dialog id="projectDialog" aria-labelledby="projectDialogTitle">
+    <div class="dialog-head"><h2 id="projectDialogTitle">Mes projets</h2><button id="closeProjects" aria-label="Fermer">✕</button></div>
+    <p>Les projets sont enregistrés sur cet iPhone, dans Safari. Ils ne sont pas synchronisés.</p>
+    <div id="projectsList"></div>
+    <div class="dialog-actions"><button id="importProject">Importer JSON</button><input id="importFile" type="file" accept=".json,application/json" hidden><button id="exportProject">Exporter JSON</button></div>
+  </dialog>
+  <dialog id="optionsDialog" aria-labelledby="optionsTitle">
+    <div class="dialog-head"><h2 id="optionsTitle">Options GagaCad3D</h2><button id="closeOptions" aria-label="Fermer">✕</button></div>
+    <p>Pour créer un mur : passez en Plan 2D, choisissez Mur, touchez le départ puis l'arrivée. Sélectionnez un mur pour modifier ses propriétés.</p>
+    <p>Le projet est un prototype BIM local. Exportez régulièrement un JSON : les données Safari peuvent être effacées par iOS ou par l'utilisateur.</p>
+    <button id="optionsExport">Exporter le projet JSON</button>
+  </dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+</div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
