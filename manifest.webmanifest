@@ -1,0 +1,18 @@
+{
+  "name": "GagaCad3D — Éditeur BIM",
+  "short_name": "GagaCad3D",
+  "description": "Éditeur BIM tactile autonome pour iPhone",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#081421",
+  "theme_color": "#0c1724",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
